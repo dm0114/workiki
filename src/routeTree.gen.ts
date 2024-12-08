@@ -10,66 +10,179 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./view/routes/__root";
-import { Route as IndexImport } from "./view/routes/index";
+import { Route as rootRoute } from './view/routes/__root'
+import { Route as PublicImport } from './view/routes/_public'
+import { Route as PrivateImport } from './view/routes/_private'
+import { Route as PageImport } from './view/routes/_page'
+import { Route as IndexImport } from './view/routes/index'
+import { Route as PublicLoginIndexImport } from './view/routes/_public/login/index'
+import { Route as PrivatePageWorkLogIndexImport } from './view/routes/_private/_page/work-log/index'
 
 // Create/Update Routes
 
+const PublicRoute = PublicImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PrivateRoute = PrivateImport.update({
+  id: '/_private',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PageRoute = PageImport.update({
+  id: '/_page',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
-	id: "/",
-	path: "/",
-	getParentRoute: () => rootRoute,
-} as any);
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PublicLoginIndexRoute = PublicLoginIndexImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => PublicRoute,
+} as any)
+
+const PrivatePageWorkLogIndexRoute = PrivatePageWorkLogIndexImport.update({
+  id: '/_page/work-log/',
+  path: '/work-log/',
+  getParentRoute: () => PrivateRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
-	interface FileRoutesByPath {
-		"/": {
-			id: "/";
-			path: "/";
-			fullPath: "/";
-			preLoaderRoute: typeof IndexImport;
-			parentRoute: typeof rootRoute;
-		};
-	}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/_page': {
+      id: '/_page'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PageImport
+      parentRoute: typeof rootRoute
+    }
+    '/_private': {
+      id: '/_private'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PrivateImport
+      parentRoute: typeof rootRoute
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicImport
+      parentRoute: typeof rootRoute
+    }
+    '/_public/login/': {
+      id: '/_public/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginIndexImport
+      parentRoute: typeof PublicImport
+    }
+    '/_private/_page/work-log/': {
+      id: '/_private/_page/work-log/'
+      path: '/work-log'
+      fullPath: '/work-log'
+      preLoaderRoute: typeof PrivatePageWorkLogIndexImport
+      parentRoute: typeof PrivateImport
+    }
+  }
 }
 
 // Create and export the route tree
 
+interface PrivateRouteChildren {
+  PrivatePageWorkLogIndexRoute: typeof PrivatePageWorkLogIndexRoute
+}
+
+const PrivateRouteChildren: PrivateRouteChildren = {
+  PrivatePageWorkLogIndexRoute: PrivatePageWorkLogIndexRoute,
+}
+
+const PrivateRouteWithChildren =
+  PrivateRoute._addFileChildren(PrivateRouteChildren)
+
+interface PublicRouteChildren {
+  PublicLoginIndexRoute: typeof PublicLoginIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicLoginIndexRoute: PublicLoginIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 export interface FileRoutesByFullPath {
-	"/": typeof IndexRoute;
+  '/': typeof IndexRoute
+  '': typeof PublicRouteWithChildren
+  '/login': typeof PublicLoginIndexRoute
+  '/work-log': typeof PrivatePageWorkLogIndexRoute
 }
 
 export interface FileRoutesByTo {
-	"/": typeof IndexRoute;
+  '/': typeof IndexRoute
+  '': typeof PublicRouteWithChildren
+  '/login': typeof PublicLoginIndexRoute
+  '/work-log': typeof PrivatePageWorkLogIndexRoute
 }
 
 export interface FileRoutesById {
-	__root__: typeof rootRoute;
-	"/": typeof IndexRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/_page': typeof PageRoute
+  '/_private': typeof PrivateRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
+  '/_public/login/': typeof PublicLoginIndexRoute
+  '/_private/_page/work-log/': typeof PrivatePageWorkLogIndexRoute
 }
 
 export interface FileRouteTypes {
-	fileRoutesByFullPath: FileRoutesByFullPath;
-	fullPaths: "/";
-	fileRoutesByTo: FileRoutesByTo;
-	to: "/";
-	id: "__root__" | "/";
-	fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '' | '/login' | '/work-log'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '' | '/login' | '/work-log'
+  id:
+    | '__root__'
+    | '/'
+    | '/_page'
+    | '/_private'
+    | '/_public'
+    | '/_public/login/'
+    | '/_private/_page/work-log/'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-	IndexRoute: typeof IndexRoute;
+  IndexRoute: typeof IndexRoute
+  PageRoute: typeof PageRoute
+  PrivateRoute: typeof PrivateRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-	IndexRoute: IndexRoute,
-};
+  IndexRoute: IndexRoute,
+  PageRoute: PageRoute,
+  PrivateRoute: PrivateRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
+}
 
 export const routeTree = rootRoute
-	._addFileChildren(rootRouteChildren)
-	._addFileTypes<FileRouteTypes>();
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -77,11 +190,37 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/_page",
+        "/_private",
+        "/_public"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/_page": {
+      "filePath": "_page.tsx"
+    },
+    "/_private": {
+      "filePath": "_private.tsx",
+      "children": [
+        "/_private/_page/work-log/"
+      ]
+    },
+    "/_public": {
+      "filePath": "_public.tsx",
+      "children": [
+        "/_public/login/"
+      ]
+    },
+    "/_public/login/": {
+      "filePath": "_public/login/index.tsx",
+      "parent": "/_public"
+    },
+    "/_private/_page/work-log/": {
+      "filePath": "_private/_page/work-log/index.tsx",
+      "parent": "/_private"
     }
   }
 }
